@@ -1,5 +1,6 @@
 package driverin
 
+import "C"
 import (
 	"bufio"
 	"flag"
@@ -10,7 +11,6 @@ import (
 	"os"
 	"strings"
 	"sync"
-	"time"
 )
 
 type CLIAdapter struct {
@@ -28,26 +28,26 @@ func (C *CLIAdapter) Run() {
 	var fileLocation string
 	var timeLimit int
 	parseFlags(&fileLocation, &timeLimit)
-	scanner := bufio.NewReader(os.Stdin)
 
 	err := C.Quiz.Setup(fileLocation)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	questions := C.Quiz.Questions()
-	timesUp := C.Quiz.StartTimer(timeLimit)
+	questionCh := C.Quiz.Questions()
 	answerCh := make(chan int)
 
 	wg.Add(1)
-	go getAnswers(&wg, answerCh, C)
+	go C.getAnswers(&wg, answerCh)
 
-	go startQuestions(timesUp, answerCh, questions, scanner)
+	go startQuestions(timeLimit, answerCh, questionCh)
 
 	wg.Wait()
 }
 
-func startQuestions(timesUp <-chan time.Time, answerCh chan int, questions <-chan structs.Question, scanner *bufio.Reader) {
+func startQuestions(timeLimit int, answerCh chan int, questions <-chan structs.Question) {
+	timesUp := C.Quiz.StartTimer(timeLimit)
+	scanner := bufio.NewReader(os.Stdin)
 loop:
 	for {
 		select {
@@ -70,7 +70,7 @@ loop:
 	}
 }
 
-func getAnswers(wg *sync.WaitGroup, answerCh chan int, C *CLIAdapter) {
+func (c *CLIAdapter) getAnswers(wg *sync.WaitGroup, answerCh chan int) {
 	defer wg.Done()
 loop:
 	for {
