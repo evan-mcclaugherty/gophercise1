@@ -2,6 +2,6 @@ package structs
 
 type Question struct {
 	QuestionNumber int
-	Qustion        string
+	Question       string
 	Answer         string
 }

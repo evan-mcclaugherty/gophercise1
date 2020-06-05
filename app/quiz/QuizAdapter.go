@@ -50,7 +50,7 @@ func (q *Quiz) Questions() <-chan structs.Question {
 		for index, question := range q.Storage.Records() {
 			questions <- structs.Question{
 				QuestionNumber: index + 1,
-				Qustion:        question[0],
+				Question:       question[0],
 				Answer:         question[1],
 			}
 		}

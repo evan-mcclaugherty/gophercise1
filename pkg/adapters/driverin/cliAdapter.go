@@ -5,10 +5,12 @@ import (
 	"flag"
 	"fmt"
 	"gophercise1/app/quiz"
+	"gophercise1/app/quiz/structs"
 	"log"
 	"os"
 	"strings"
 	"sync"
+	"time"
 )
 
 type CLIAdapter struct {
@@ -38,23 +40,14 @@ func (C *CLIAdapter) Run() {
 	answerCh := make(chan int)
 
 	wg.Add(1)
-	go func() {
-		defer wg.Done()
-	loop:
-		for {
-			select {
-			case _, ok := <-answerCh:
-				if ok {
-					C.Quiz.IncrementScore()
-				} else {
-					fmt.Printf("You scored: %v/%v", C.Quiz.Score(), C.Quiz.NumOfQuestions())
-					break loop
-				}
-			default:
-			}
-		}
-	}()
+	go getAnswers(&wg, answerCh, C)
 
+	go startQuestions(timesUp, answerCh, questions, scanner)
+
+	wg.Wait()
+}
+
+func startQuestions(timesUp <-chan time.Time, answerCh chan int, questions <-chan structs.Question, scanner *bufio.Reader) {
 loop:
 	for {
 		select {
@@ -67,7 +60,7 @@ loop:
 				close(answerCh)
 				break loop
 			} else {
-				fmt.Printf("%v) %v : ", question.QuestionNumber, question.Qustion)
+				fmt.Printf("%v) %v : ", question.QuestionNumber, question.Question)
 				str, _ := scanner.ReadString('\n')
 				if strings.TrimSpace(str) == question.Answer {
 					answerCh <- 1
@@ -75,8 +68,23 @@ loop:
 			}
 		}
 	}
+}
 
-	wg.Wait()
+func getAnswers(wg *sync.WaitGroup, answerCh chan int, C *CLIAdapter) {
+	defer wg.Done()
+loop:
+	for {
+		select {
+		case _, ok := <-answerCh:
+			if ok {
+				C.Quiz.IncrementScore()
+			} else {
+				fmt.Printf("You scored: %v/%v", C.Quiz.Score(), C.Quiz.NumOfQuestions())
+				break loop
+			}
+		default:
+		}
+	}
 }
 
 func parseFlags(fileLocation *string, timeLimit *int) {
