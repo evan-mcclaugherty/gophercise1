@@ -52,6 +52,7 @@ func (C *CLIAdapter) Run() {
 			}
 		}
 	}
+	fmt.Printf("You got %v our of %v right.\n", C.Quiz.Score(), C.Quiz.NumOfQuestions())
 }
 
 func parseFlags(fileLocation *string, timeLimit *int) {
