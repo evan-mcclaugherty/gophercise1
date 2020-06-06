@@ -44,7 +44,7 @@ func (C *CLIAdapter) Run() {
 
 		select {
 		case <-timesUp:
-			fmt.Printf("\nYou got %v our of %v right.\n", C.Quiz.Score(), C.Quiz.NumOfQuestions())
+			fmt.Printf("\nYou got %v out of %v right.\n", C.Quiz.Score(), C.Quiz.NumOfQuestions())
 			return
 		case isCorrect := <-answerCh:
 			if isCorrect {
@@ -52,7 +52,7 @@ func (C *CLIAdapter) Run() {
 			}
 		}
 	}
-	fmt.Printf("You got %v our of %v right.\n", C.Quiz.Score(), C.Quiz.NumOfQuestions())
+	fmt.Printf("You got %v out of %v right.\n", C.Quiz.Score(), C.Quiz.NumOfQuestions())
 }
 
 func parseFlags(fileLocation *string, timeLimit *int) {
