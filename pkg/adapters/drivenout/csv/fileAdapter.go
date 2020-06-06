@@ -1,7 +1,6 @@
 package csv
 
 import (
-	"bufio"
 	"encoding/csv"
 	"errors"
 	"fmt"
@@ -44,7 +43,7 @@ func (C *FileAdapter) openFile(fileLocation string) (*os.File, error) {
 }
 
 func (C *FileAdapter) readFile(file *os.File) ([][]string, error) {
-	reader := csv.NewReader(bufio.NewReader(file))
+	reader := csv.NewReader(file)
 	records, err := reader.ReadAll()
 
 	if err != nil {
